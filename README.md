@@ -113,5 +113,7 @@ Adding headers, footers, section titles, and multi-line text formatting.
 
 Exporting data analytics into a readable document format
 
+OUTPUT:
 
+<img width="527" height="547" alt="Image" src="https://github.com/user-attachments/assets/5603b7e1-b93e-4e32-bd0d-8d4dc4b49191" />
 
