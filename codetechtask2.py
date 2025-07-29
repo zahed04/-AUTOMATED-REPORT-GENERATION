@@ -1,54 +1,62 @@
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+import pandas as_csv(StringIO(csv_data)) 
+from fpdf import FPDF
+from io import StringIO
 
 
-url = "https://raw.githubusercontent.com/justmarkham/pycon-2016-tutorial/master/data/sms.tsv"
-data = pd.read_csv(url, sep="\t", header=None, names=["label", "message"])
-print("Sample data:")
-display(data.head())
+csv_data = """Date,Product,Units Sold,Revenue
+2025-07-01,Widget A,100,5000
+2025-07-02,Widget B,150,7500
+2025-07-03,Widget A,120,6000
+2025-07-04,Widget C,90,4500
+2025-07-05,Widget B,130,6500
+"""
 
+df = pd.read
+# Analysis
+total_units = df["Units Sold"].sum()
+total_revenue = df["Revenue"].sum()
+avg_revenue = df["Revenue"].mean()
+top_product = df.groupby("Product")["Revenue"].sum().idxmax()
 
-data['label'].value_counts().plot(kind='bar', title='Class Distribution', xlabel='Label', ylabel='Count')
-plt.show()
+# PDF Report Class
+class PDF(FPDF):
+    def header(self):
+        self.set_font("Arial", "B", 16)
+        self.cell(0, 10, "Sales Report", ln=1, align="C")
 
+    def footer(self):
+        self.set_y(-15)
+        self.set_font("Arial", "I", 8)
+        self.cell(0, 10, f"Page {self.page_no()}", align="C")
 
-data['label'] = data['label'].map({'ham': 0, 'spam': 1})
+    def section_title(self, title):
+        self.set_font("Arial", "B", 14)
+        self.cell(0, 10, title, ln=1)
+        self.ln(2)
 
+    def section_body(self, text):
+        self.set_font("Arial", "", 12)
+        self.multi_cell(0, 10, text)
+        self.ln()
 
-X = data['message']
-y = data['label']
+# Create and fill the PDF
+pdf = PDF()
+pdf.add_page()
 
+pdf.section_title("Summary Statistics")
+pdf.section_body(
+    f"Total Units Sold: {total_units}\n"
+    f"Total Revenue: ${total_revenue:,.2f}\n"
+    f"Average Revenue per Day: ${avg_revenue:,.2f}\n"
+    f"Top-Selling Product: {top_product}"
+)
 
-vectorizer = CountVectorizer()
-X_vect = vectorizer.fit_transform(X)
+pdf.section_title("Daily Sales Records")
+for idx, row in df.iterrows():
+    pdf.section_body(
+        f"{row['Date']} - {row['Product']} | Units Sold: {row['Units Sold']} | Revenue: ${row['Revenue']}"
+    )
 
-X_train, X_test, y_train, y_test = train_test_split(X_vect, y, test_size=0.2, random_state=42)
-
-model = MultinomialNB()
-model.fit(X_train, y_train)
-y_pred = model.predict(X_test)
-
-print(f" Accuracy: {accuracy_score(y_test, y_pred):.2f}\n")
-print(" Classification Report:")
-print(classification_report(y_test, y_pred))
-
-cm = confusion_matrix(y_test, y_pred)
-sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=["Not Spam", "Spam"], yticklabels=["Not Spam", "Spam"])
-plt.title("Confusion Matrix")
-plt.xlabel("Predicted")
-plt.ylabel("Actual")
-plt.show()
-
-def predict_message(msg):
-    vect = vectorizer.transform([msg])
-    result = model.predict(vect)[0]
-    return "Spam" if result == 1 else "Not Spam"
-test_message = "You have won $1000. Claim your reward now!"
-print(f"\n🔮 Prediction for test message:\n'{test_message}' ➤ {predict_message(test_message)}")
+# Save PDF
+pdf.output("sales_report_embedded.pdf")
+print("PDF report generated: sales_report_embedded.pdf")
